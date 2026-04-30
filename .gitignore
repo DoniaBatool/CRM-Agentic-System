@@ -1,0 +1,20 @@
+# Environment
+.env
+
+# Auth session
+auth.json
+
+# Node modules
+node_modules/
+
+# Playwright logs
+.playwright-mcp/
+
+# Gemini
+.gemini/
+
+# Workflows output (optional - agar push nahi karni)
+workflows/
+
+# OS files
+.DS_Store

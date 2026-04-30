@@ -1,0 +1,42 @@
+{
+  "personal_consultation_booked": {
+    "event": "Personal Consultation",
+    "action": "booked",
+    "email": "user@gmail.com",
+    "contact_number": "+923001234567",
+    "first_name": "Ali",
+    "last_name": "Khan",
+    "appointment_datetime": "2026-04-10T17:00:00",
+    "secret": "abc123"
+  },
+  "personal_consultation_rescheduled": {
+    "event": "Personal Consultation",
+    "action": "rescheduled",
+    "email": "user@gmail.com",
+    "contact_number": "+923001234567",
+    "first_name": "Ali",
+    "last_name": "Khan",
+    "appointment_datetime": "2026-04-10T18:00:00",
+    "secret": "abc123"
+  },
+  "treatment_booked": {
+    "event": "treatment",
+    "action": "booked",
+    "email": "user@gmail.com",
+    "contact_number": "+923001234567",
+    "first_name": "Ali",
+    "last_name": "Khan",
+    "appointment_datetime": "2026-04-10T15:00:00",
+    "secret": "abc123"
+  },
+  "treatment_rescheduled": {
+    "event": "treatment",
+    "action": "rescheduled",
+    "email": "user@gmail.com",
+    "contact_number": "+923001234567",
+    "first_name": "Ali",
+    "last_name": "Khan",
+    "appointment_datetime": "2026-04-10T15:00:00",
+    "secret": "abc123"
+  }
+}
