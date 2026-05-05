@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "id": "donia-batool-1",
+      "firstName": "Donia1",
+      "lastName": "Batool1",
+      "email": "donia1510aptech@gmail.com",
+      "phone": "03232918899"
+    },
+    {
+      "id": "donia-batool-2",
+      "firstName": "Donia2",
+      "lastName": "Batool2",
+      "email": "ummejawwad313@gmail.com",
+      "phone": "03180736608"
+    },
+    {
+      "id": "osama-siddiqui",
+      "firstName": "Osama",
+      "lastName": "Siddiqui",
+      "email": "siddiqui.m.osama@gmail.com",
+      "phone": "+14697810230"
+    },
+    {
+      "id": "hamza-syed-quadri",
+      "firstName": "Hamza",
+      "lastName": "Syed Quadri",
+      "email": "hamzamamarketing@gmail.com",
+      "phone": "+14693456789"
+    },
+    {
+      "id": "huzaifa-siddiqui",
+      "firstName": "Huzaifa",
+      "lastName": "Siddiqui",
+      "email": "huzaifamsiddiqui@gmail.com",
+      "phone": "+14699876543"
+    }
+  ]
+}

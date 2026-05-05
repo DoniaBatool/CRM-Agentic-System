@@ -1,0 +1,53 @@
+{
+  "targets": [
+    {
+      "id": "survey-agency-1",
+      "name": "Survey #1 (Agency Side)",
+      "category": "survey",
+      "side": "agency",
+      "url": "https://api.bucktoothmarketing.com/widget/survey/w15hwhsbhz3lckkE5fSZ"
+    },
+    {
+      "id": "survey-agency-2",
+      "name": "Survey #2 (Agency Side)",
+      "category": "survey",
+      "side": "agency",
+      "url": "https://api.bucktoothmarketing.com/widget/survey/PLyAgFRFRMfM4hD4OP5H"
+    },
+    {
+      "id": "website-survey-3",
+      "name": "Website Survey #3 (Dental Client Side)",
+      "category": "survey",
+      "side": "dental-client",
+      "url": "https://api.bucktoothmarketing.com/widget/survey/8rEwXd1ltEpMv0htT6Tz"
+    },
+    {
+      "id": "nurtura-onboarding",
+      "name": "Nurtura On Boarding (Agency Side)",
+      "category": "form",
+      "side": "agency",
+      "url": "https://signup.bucktoothmarketing.com/survey-/-form"
+    },
+    {
+      "id": "plan-picker",
+      "name": "Plan Picker",
+      "category": "form",
+      "side": "agency",
+      "url": "https://signup.bucktoothmarketing.com/plan-picker"
+    },
+    {
+      "id": "solo-plan",
+      "name": "Solo Plan",
+      "category": "form",
+      "side": "agency",
+      "url": "https://signup.bucktoothmarketing.com/solo-plan"
+    },
+    {
+      "id": "practice-plan",
+      "name": "Practice Plan",
+      "category": "form",
+      "side": "agency",
+      "url": "https://signup.bucktoothmarketing.com/practice-plan"
+    }
+  ]
+}

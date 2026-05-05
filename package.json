@@ -8,9 +8,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "start:mcp": "node index.js"
+    "start:mcp": "node index.js",
+    "kill:browsers": "bash scripts/kill-playwright-browsers.sh"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.93.0",
     "@modelcontextprotocol/sdk": "^1.10.1",
     "@playwright/test": "^1.59.1",
     "axios": "^1.7.0",

@@ -1,0 +1,10 @@
+{
+  "requireUserSelectionBeforeEachTarget": true,
+  "showUserListBeforeEachTarget": true,
+  "userFieldsToDisplay": [
+    "firstName",
+    "lastName",
+    "email",
+    "phone"
+  ]
+}

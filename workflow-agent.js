@@ -14,6 +14,10 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const AUTH_FILE = "auth.json";
 const OUTPUT_DIR = "workflows";
 
+function sanitizeSubAccountName(subAccountName = "") {
+  return subAccountName.replace(/[<>:"/\\|?*]+/g, "_").trim() || "unknown-sub-account";
+}
+
 // ── GHL API: workflow list ──────────────────────────────────────
 async function fetchWorkflows(locationId, token) {
   const res = await fetch(
@@ -37,8 +41,113 @@ export async function listWorkflows({ locationId, token }) {
   return fetchWorkflows(locationId, token);
 }
 
+export async function exportSelectedWorkflows({
+  subAccountName,
+  locationId,
+  token,
+  workflowIds = [],
+}) {
+  if (!subAccountName || !locationId || !token) {
+    throw new Error("subAccountName, locationId, and token are required.");
+  }
+  if (!Array.isArray(workflowIds) || workflowIds.length === 0) {
+    throw new Error("workflowIds must be a non-empty array.");
+  }
+
+  const workflows = await fetchWorkflows(locationId, token);
+  const selected = workflows.filter((wf) => workflowIds.includes(wf.id));
+  const safeSubAccountName = sanitizeSubAccountName(subAccountName);
+  const subAccountOutputDir = `${OUTPUT_DIR}/${safeSubAccountName}`;
+
+  if (!selected.length) {
+    return {
+      exportedCount: 0,
+      outputDir: subAccountOutputDir,
+      exportedWorkflows: [],
+      missingWorkflowIds: workflowIds,
+    };
+  }
+
+  const exported = [];
+  for (const wf of selected) {
+    await exportWorkflow(wf, locationId, subAccountOutputDir);
+    exported.push({ id: wf.id, name: wf.name });
+  }
+
+  const missingWorkflowIds = workflowIds.filter(
+    (id) => !selected.some((wf) => wf.id === id)
+  );
+
+  return {
+    exportedCount: exported.length,
+    outputDir: subAccountOutputDir,
+    exportedWorkflows: exported,
+    missingWorkflowIds,
+  };
+}
+
+export function listExportedWorkflowFiles({ subAccountName }) {
+  if (!subAccountName) {
+    throw new Error("subAccountName is required.");
+  }
+
+  const safeSubAccountName = sanitizeSubAccountName(subAccountName);
+  const subAccountOutputDir = `${OUTPUT_DIR}/${safeSubAccountName}`;
+  if (!fs.existsSync(subAccountOutputDir)) {
+    return {
+      outputDir: subAccountOutputDir,
+      files: [],
+    };
+  }
+
+  const files = fs
+    .readdirSync(subAccountOutputDir)
+    .filter((name) => name.endsWith(".json"))
+    .map((name) => ({
+      id: name,
+      fileName: name,
+      filePath: `${subAccountOutputDir}/${name}`,
+    }));
+
+  return {
+    outputDir: subAccountOutputDir,
+    files,
+  };
+}
+
+export function deleteExportedWorkflowFiles({ subAccountName, fileNames = [] }) {
+  if (!subAccountName) {
+    throw new Error("subAccountName is required.");
+  }
+  if (!Array.isArray(fileNames) || fileNames.length === 0) {
+    throw new Error("fileNames must be a non-empty array.");
+  }
+
+  const safeSubAccountName = sanitizeSubAccountName(subAccountName);
+  const subAccountOutputDir = `${OUTPUT_DIR}/${safeSubAccountName}`;
+  const deletedFiles = [];
+  const missingFiles = [];
+
+  for (const name of fileNames) {
+    const fullPath = `${subAccountOutputDir}/${name}`;
+    if (!fs.existsSync(fullPath)) {
+      missingFiles.push(name);
+      continue;
+    }
+    fs.unlinkSync(fullPath);
+    deletedFiles.push(name);
+  }
+
+  return {
+    outputDir: subAccountOutputDir,
+    deletedCount: deletedFiles.length,
+    deletedFiles,
+    missingFiles,
+  };
+}
+
 // ── Playwright: capture workflow JSON ──────────────────────────
-async function exportWorkflow(wf, locationId) {
+async function exportWorkflow(wf, locationId, targetDir) {
   const browser = await chromium.launch({ headless: false });
 
   const context = fs.existsSync(AUTH_FILE)
@@ -55,7 +164,7 @@ async function exportWorkflow(wf, locationId) {
     console.log("✅ Session saved!");
   }
 
-  if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR);
+  if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
   const captured = { workflow: null, trigger: null };
 
@@ -103,7 +212,7 @@ async function exportWorkflow(wf, locationId) {
   };
 
   fs.writeFileSync(
-    `${OUTPUT_DIR}/${safeName}.json`,
+    `${targetDir}/${safeName}.json`,
     JSON.stringify(output, null, 2)
   );
   console.log(`  💾 Saved: ${safeName}.json`);
@@ -118,6 +227,8 @@ async function main() {
 
   // Sub-account name
   const subAccountName = await ask("📋 Kis sub-account ke workflows chahiye? (naam batao): ");
+  const safeSubAccountName = sanitizeSubAccountName(subAccountName);
+  const subAccountOutputDir = `${OUTPUT_DIR}/${safeSubAccountName}`;
 
   // Location ID
   const locationId = await ask(`📍 ${subAccountName} ka Location ID: `);
@@ -199,7 +310,7 @@ async function main() {
     const wf = selectedWorkflows[i];
     console.log(`\n[${i + 1}/${selectedWorkflows.length}] ${wf.name}`);
     try {
-      await exportWorkflow(wf, locationId);
+      await exportWorkflow(wf, locationId, subAccountOutputDir);
       if (i < selectedWorkflows.length - 1) {
         console.log("  ⏱️ 2 second wait...");
         await new Promise(r => setTimeout(r, 2000));
@@ -210,7 +321,7 @@ async function main() {
   }
 
   console.log("\n🎉 Export complete!");
-  console.log(`📁 Files saved in: ./${OUTPUT_DIR}/`);
+  console.log(`📁 Files saved in: ./${subAccountOutputDir}/`);
   rl.close();
 }
 

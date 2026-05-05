@@ -17,6 +17,7 @@ out/
 
 # Workflows output (optional - agar push nahi karni)
 workflows/
+.agent-memory/
 
 # OS files
 .DS_Store

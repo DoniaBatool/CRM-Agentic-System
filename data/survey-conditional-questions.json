@@ -1,0 +1,141 @@
+{
+  "targets": [
+    {
+      "targetId": "survey-agency-1",
+      "targetName": "Survey #1 (Agency Side)",
+      "requiredQuestions": [
+        {
+          "id": "final-slide-readiness",
+          "question": "Almost done—are you ready to see how a trust-first funnel can fill your calendar with qualified, high-value patients? *",
+          "type": "single-choice",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "askUser": true
+        }
+      ],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random"
+      }
+    },
+    {
+      "targetId": "survey-agency-2",
+      "targetName": "Survey #2 (Agency Side)",
+      "requiredQuestions": [],
+      "requiredUploads": [
+        {
+          "id": "company-logo-upload",
+          "question": "Upload your Company Logo *",
+          "type": "file",
+          "filePath": "public/survey-assets/bucktooth_image2.jpeg",
+          "askUser": false
+        }
+      ],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random",
+        "calendar": "random-future"
+      }
+    },
+    {
+      "targetId": "website-survey-3",
+      "targetName": "Website Survey #3 (Dental Client Side)",
+      "requiredQuestions": [
+        {
+          "id": "credit-score-approx",
+          "question": "To help us find the best financing options for you, what's your approximate credit score?",
+          "type": "single-choice",
+          "options": [
+            "Excellent (720+)",
+            "Good (650-719)",
+            "Fair (580-649)",
+            "Rebuilding (Below 580)",
+            "I'm not sure"
+          ],
+          "askUser": true
+        }
+      ],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random",
+        "calendar": "random-future"
+      }
+    },
+    {
+      "targetId": "nurtura-onboarding",
+      "targetName": "Nurtura On Boarding (Agency Side)",
+      "requiredQuestions": [],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random",
+        "calendar": "random-future"
+      }
+    },
+    {
+      "targetId": "plan-picker",
+      "targetName": "Plan Picker",
+      "requiredQuestions": [
+        {
+          "id": "plan-choice",
+          "question": "Please choose plan type:",
+          "type": "single-choice",
+          "options": [
+            "Solo Plan",
+            "Practice Plan"
+          ],
+          "askUser": true
+        }
+      ],
+      "postAnswerActions": [
+        {
+          "type": "click-card-button",
+          "buttonText": "Start 14-day trial",
+          "targetByAnswer": {
+            "Solo Plan": "solo",
+            "Practice Plan": "practice"
+          }
+        }
+      ],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random"
+      }
+    },
+    {
+      "targetId": "solo-plan",
+      "targetName": "Solo Plan",
+      "requiredQuestions": [],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random",
+        "calendar": "random-future"
+      }
+    },
+    {
+      "targetId": "practice-plan",
+      "targetName": "Practice Plan",
+      "requiredQuestions": [],
+      "autoFillPolicy": {
+        "textInputs": "random",
+        "dropdowns": "random",
+        "checkboxes": "random",
+        "radioButtons": "random",
+        "calendar": "random-future"
+      }
+    }
+  ]
+}
