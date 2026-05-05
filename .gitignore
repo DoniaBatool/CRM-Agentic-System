@@ -6,6 +6,8 @@ auth.json
 
 # Node modules
 node_modules/
+.next/
+out/
 
 # Playwright logs
 .playwright-mcp/

@@ -5,14 +5,20 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "start:mcp": "node index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.1",
     "@playwright/test": "^1.59.1",
     "axios": "^1.7.0",
     "dotenv": "^16.6.1",
+    "next": "^16.2.4",
     "openai": "^6.35.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "zod": "^3.22.4"
   }
 }

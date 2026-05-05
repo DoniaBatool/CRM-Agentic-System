@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import readline from "readline";
+import { fileURLToPath } from "url";
 
 const ALLOWED_NOTEBOOKS = [
   { id: "b7efb8aa-d135-4fc8-940c-3e6bd23dc795", name: "GoHighLevel" },
@@ -51,6 +52,23 @@ async function crossQuery(question) {
       else reject(new Error(error || "Cross query failed"));
     });
   });
+}
+
+export async function askGhlAssistant({ question, mode = "cross", notebookId } = {}) {
+  const trimmedQuestion = (question || "").trim();
+
+  if (!trimmedQuestion) {
+    throw new Error("Question is required.");
+  }
+
+  if (mode === "single") {
+    if (!notebookId) {
+      throw new Error("notebookId is required for single notebook mode.");
+    }
+    return queryNotebook(notebookId, trimmedQuestion);
+  }
+
+  return crossQuery(trimmedQuestion);
 }
 
 async function main() {
@@ -115,4 +133,8 @@ async function main() {
   rl.close();
 }
 
-main();
+const isDirectRun = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  main();
+}

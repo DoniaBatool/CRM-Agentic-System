@@ -60,6 +60,38 @@ function getDefaultDateTime() {
   return now.toISOString().slice(0, 19);
 }
 
+export async function searchContacts(query) {
+  const name = (query || "").trim();
+  if (!name) {
+    throw new Error("Contact query is required.");
+  }
+  return findContact(name);
+}
+
+export async function triggerWorkflowWebhook({ webhookUrl, payload }) {
+  if (!webhookUrl) {
+    throw new Error("webhookUrl is required.");
+  }
+  if (!payload || typeof payload !== "object") {
+    throw new Error("payload object is required.");
+  }
+
+  const res = await sendWebhook(webhookUrl, payload);
+  return {
+    status: res.status,
+    statusText: res.statusText,
+    data: res.data,
+  };
+}
+
+export function getWebhookMap() {
+  return WEBHOOK_MAP;
+}
+
+export function getSuggestedDateTime() {
+  return getDefaultDateTime();
+}
+
 // ── Main Agent ─────────────────────────────────────────────────
 async function main() {
   console.log("\n🤖 GHL Workflow Tester Agent");
@@ -215,4 +247,8 @@ async function main() {
   }
 }
 
-main();
+const isDirectRun = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  main();
+}

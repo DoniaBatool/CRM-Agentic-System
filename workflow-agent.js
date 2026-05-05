@@ -3,6 +3,7 @@ import { chromium } from "playwright";
 import fs from "fs";
 import readline from "readline";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
 dotenv.config();
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -27,6 +28,13 @@ async function fetchWorkflows(locationId, token) {
   );
   const data = await res.json();
   return data.workflows || [];
+}
+
+export async function listWorkflows({ locationId, token }) {
+  if (!locationId || !token) {
+    throw new Error("locationId and token are required.");
+  }
+  return fetchWorkflows(locationId, token);
 }
 
 // ── Playwright: capture workflow JSON ──────────────────────────
@@ -206,4 +214,8 @@ async function main() {
   rl.close();
 }
 
-main();
+const isDirectRun = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  main();
+}
