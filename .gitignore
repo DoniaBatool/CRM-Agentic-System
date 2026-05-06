@@ -21,3 +21,6 @@ workflows/
 
 # OS files
 .DS_Store
+
+# Cursor MCP config (contains tokens)
+.cursor/mcp.json

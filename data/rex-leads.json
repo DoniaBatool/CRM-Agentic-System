@@ -209,6 +209,34 @@
       "email": "bootstrap@5.1.3",
       "source": "apify",
       "scrapedAt": "2026-05-06T11:37:09.858Z"
+    },
+    {
+      "id": "ChIJ3zEIdr473okRtNBJq4cvNZY",
+      "name": "Signature ONE Realty Group",
+      "address": "2460 US-9, Malta, NY 12020",
+      "city": "Malta",
+      "phone": "(518) 639-4663",
+      "website": "https://www.signatureonerealtygroup.com/",
+      "rating": 4.6,
+      "reviewsCount": 131,
+      "category": "Real estate agency",
+      "email": "embla-carousel@8.6.0",
+      "source": "apify",
+      "scrapedAt": "2026-05-06T13:37:07.658Z"
+    },
+    {
+      "id": "ChIJD8L5LzN3gUcR4acm8nOLH4k",
+      "name": "Benimmobili Impresa | la tua Agenzia Immobiliare di Brescia",
+      "address": "Via Malta, 7, 25124 Brescia BS, Italy",
+      "city": "Brescia",
+      "phone": "+39 030 098 2096",
+      "website": "https://www.benimpre.com/",
+      "rating": 4.7,
+      "reviewsCount": 28,
+      "category": "Real estate agency",
+      "email": "contact@myemail.com",
+      "source": "apify",
+      "scrapedAt": "2026-05-06T13:46:42.416Z"
     }
   ]
 }

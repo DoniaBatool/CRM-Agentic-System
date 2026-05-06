@@ -514,16 +514,31 @@ export default function ChatPanel({ selectedAgent }) {
   async function rexGetLeads() {
     setLoading(true);
     try {
-      // Try Supabase first, fallback to JSON file via API
-      const sbLeads = await loadLeadsFromSupabase();
-      if (sbLeads !== null) {
-        setRexLeads(sbLeads);
+      // Try Supabase first
+      let leads = null;
+      try {
+        leads = await loadLeadsFromSupabase();
+      } catch (sbErr) {
+        console.warn("Supabase load failed, falling back to JSON:", sbErr.message);
+      }
+
+      if (leads && leads.length > 0) {
+        setRexLeads(leads);
       } else {
+        // Fallback: load from local JSON file via API
         const data = await callAction({ action: "get-leads" });
-        setRexLeads(data?.data?.leads || []);
+        const jsonLeads = data?.data?.leads || [];
+        setRexLeads(jsonLeads);
+        // If Supabase is available, save them there too
+        if (jsonLeads.length > 0) {
+          saveLeadsToSupabase(jsonLeads).catch(console.error);
+        }
+        if (jsonLeads.length === 0) {
+          setMessages((p) => [...p, { role: "agent", text: "No saved leads found. Use Search Leads to scrape new ones.", handledBy: "Rex" }]);
+        }
       }
     } catch (e) {
-      setMessages((p) => [...p, { role: "agent", text: `Error: ${e.message}`, handledBy: "system" }]);
+      setMessages((p) => [...p, { role: "agent", text: `Error loading leads: ${e.message}`, handledBy: "system" }]);
     } finally { setLoading(false); }
   }
 
@@ -934,10 +949,12 @@ export default function ChatPanel({ selectedAgent }) {
           </div>
           {/* Action Buttons */}
           <div className="rex-actions">
-            <button className="rex-btn" onClick={rexSearch} disabled={loading || !rexIndustry}>Search Leads</button>
-            <button className="rex-btn secondary" onClick={rexGetLeads} disabled={loading}>Load Saved</button>
+            <button className="rex-btn" onClick={rexSearch} disabled={loading || historyLoading || !rexIndustry.trim()}>
+              {loading ? "Searching..." : "Search Leads"}
+            </button>
+            <button className="rex-btn secondary" onClick={rexGetLeads} disabled={loading || historyLoading}>Load Saved</button>
             <button className="rex-btn secondary" onClick={rexExportCsv} disabled={!rexLeads.length}>Export CSV</button>
-            <button className="rex-btn danger" onClick={rexClearLeads} disabled={loading}>Clear All</button>
+            <button className="rex-btn danger" onClick={rexClearLeads} disabled={loading || historyLoading}>Clear All</button>
             {rexSelectedIds.length > 0 && (
               <button className="rex-btn send-max" onClick={maxAddSelectedLeads} disabled={loading}>
                 Send {rexSelectedIds.length} to Max
