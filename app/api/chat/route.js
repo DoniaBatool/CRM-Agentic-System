@@ -1,6 +1,7 @@
 import { runAgent } from "../../../lib/agent-handlers.js";
 import { routeWithLuna } from "../../../lib/orchestrator.js";
 import { saveInteraction } from "../../../lib/self-learning.js";
+import { compressHistory, formatHistoryForContext } from "../../../lib/compress-history.js";
 
 function shouldShowIntro(message, context) {
   const text = (message || "").trim().toLowerCase();
@@ -34,7 +35,7 @@ export async function POST(req) {
     const selectedAgent = body?.agentId || "orchestrator";
     const context = body?.context || {};
 
-    if (!message) {
+    if (!message && message !== "__action__") {
       return Response.json({ error: "Message is required." }, { status: 400 });
     }
 
@@ -50,7 +51,7 @@ export async function POST(req) {
       });
     }
 
-    if (selectedAgent === "orchestrator" && shouldHandleByLunaDirectly(message, context)) {
+    if (selectedAgent === "orchestrator" && message !== "__action__" && shouldHandleByLunaDirectly(message, context)) {
       const lunaResult = await runAgent("orchestrator", message, context);
       return Response.json({
         selectedAgent,
@@ -67,6 +68,12 @@ export async function POST(req) {
         ? routeWithLuna(message)
         : { agentId: selectedAgent, routingMessage: null };
     const resolvedAgent = routed.agentId;
+
+    // Compress chat history server-side before passing to agent
+    if (context.chatHistory && context.chatHistory.length > 0) {
+      const { compressed } = await compressHistory(context.chatHistory);
+      context.chatHistory = formatHistoryForContext(compressed);
+    }
 
     const result = await runAgent(resolvedAgent, message, context);
     if (selectedAgent === "orchestrator") {
