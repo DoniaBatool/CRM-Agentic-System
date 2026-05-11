@@ -237,6 +237,20 @@
       "email": "contact@myemail.com",
       "source": "apify",
       "scrapedAt": "2026-05-06T13:46:42.416Z"
+    },
+    {
+      "id": "ChIJF3VS13BFDhMRQwVPDmyBRXM",
+      "name": "Phoenix - a Maltese Real Estate Agency",
+      "address": "40 Triq Guze' Howard, Tas-Sliema SLM1550, Malta",
+      "city": "Sliema",
+      "phone": "+356 7944 8884",
+      "website": "https://www.phoenixmalta.com/",
+      "rating": 5,
+      "reviewsCount": 20,
+      "category": "Real estate agency",
+      "email": null,
+      "source": "apify",
+      "scrapedAt": "2026-05-06T14:25:39.805Z"
     }
   ]
 }

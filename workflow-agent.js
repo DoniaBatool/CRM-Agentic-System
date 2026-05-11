@@ -20,17 +20,34 @@ function sanitizeSubAccountName(subAccountName = "") {
 
 // ── GHL API: workflow list ──────────────────────────────────────
 async function fetchWorkflows(locationId, token) {
+  const cleanLocationId = (locationId || "").trim();
+  const cleanToken = (token || "").trim();
   const res = await fetch(
-    `https://services.leadconnectorhq.com/workflows/?locationId=${locationId}`,
+    `https://services.leadconnectorhq.com/workflows/?locationId=${cleanLocationId}`,
     {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${cleanToken}`,
         Version: "2021-07-28",
         Accept: "application/json",
       },
     }
   );
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (_) {
+    throw new Error(
+      `GHL API non-JSON response (HTTP ${res.status} ${res.statusText}). Token/locationId check karo.`
+    );
+  }
+  if (!res.ok) {
+    const apiMsg =
+      data?.message ||
+      data?.error ||
+      (Array.isArray(data?.errors) ? data.errors.join(", ") : null) ||
+      JSON.stringify(data);
+    throw new Error(`GHL API error (HTTP ${res.status}): ${apiMsg}`);
+  }
   return data.workflows || [];
 }
 

@@ -633,12 +633,26 @@ export default function ChatPanel({ selectedAgent }) {
 
   async function maxAddSelectedLeads() {
     const selected = rexLeads.filter((l) => rexSelectedIds.includes(l.id));
-    if (!selected.length) { setMessages((p) => [...p, { role: "agent", text: "Select leads from Rex table first.", handledBy: "system" }]); return; }
+    if (!selected.length) {
+      setMessages((p) => [...p, { role: "agent", text: "Select leads from Rex table first.", handledBy: "system" }]);
+      return;
+    }
+    const withEmail = selected.filter((l) => l.email);
+    if (!withEmail.length) {
+      setMessages((p) => [...p, { role: "agent", text: `⚠️ None of the ${selected.length} selected leads have an email address. Mailchimp requires email to add contacts. Try selecting leads that have emails (shown in the Email column).`, handledBy: "Max" }]);
+      return;
+    }
     setLoading(true);
     try {
-      const data = await callAction({ action: "add-leads", leads: selected });
-      const r = data?.data?.result;
-      const msg = r ? `✅ ${r.added} leads added to Mailchimp (${r.errors} errors).` : "Leads sent to Mailchimp.";
+      const data = await callAction({ action: "add-leads", leads: withEmail });
+      const added = data?.data?.added ?? 0;
+      const errorDetails = data?.data?.errorDetails || [];
+      const skipped = selected.length - withEmail.length;
+      let msg = `✅ ${added} lead${added !== 1 ? "s" : ""} added to Max / Mailchimp audience.`;
+      if (errorDetails.length > 0) {
+        msg += `\n\n⚠️ ${errorDetails.length} failed:\n` + errorDetails.map((e) => `• ${e.email}: ${e.error}`).join("\n");
+      }
+      if (skipped > 0) msg += `\n• ${skipped} skipped (no email)`;
       setMessages((p) => [...p, { role: "agent", text: msg, handledBy: "Max" }]);
     } catch (e) {
       setMessages((p) => [...p, { role: "agent", text: `Error: ${e.message}`, handledBy: "system" }]);
