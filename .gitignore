@@ -1,8 +1,9 @@
 # Environment
 .env
 
-# Auth session
+# Auth session (Echo agent GHL login files — never commit)
 auth.json
+auth-*.json
 
 # Node modules
 node_modules/
