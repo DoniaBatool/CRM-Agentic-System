@@ -9,11 +9,15 @@
     "build": "next build",
     "start": "next start",
     "start:mcp": "node index.js",
-    "kill:browsers": "bash scripts/kill-playwright-browsers.sh"
+    "kill:browsers": "bash scripts/kill-playwright-browsers.sh",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.93.0",
     "@modelcontextprotocol/sdk": "1.29.0",
+    "@openai/agents": "^0.11.6",
     "@playwright/test": "1.59.1",
     "@supabase/supabase-js": "^2.105.3",
     "axios": "1.14.0",
@@ -23,6 +27,9 @@
     "openai": "6.35.0",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "zod": "3.25.76"
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.8"
   }
 }

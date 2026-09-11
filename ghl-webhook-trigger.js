@@ -60,11 +60,23 @@ function getDefaultDateTime() {
   return now.toISOString().slice(0, 19);
 }
 
-export async function searchContacts(query) {
+export async function searchContacts(query, locationId, pitToken) {
   const name = (query || "").trim();
-  if (!name) {
-    throw new Error("Contact query is required.");
+  if (!name) throw new Error("Contact query is required.");
+
+  // If custom locationId/pitToken provided, create a one-off client
+  if (locationId && pitToken) {
+    const response = await axios.get(`${GHL_BASE_URL}/contacts/search`, {
+      headers: {
+        Authorization: `Bearer ${pitToken}`,
+        Version: GHL_API_VERSION,
+        "Content-Type": "application/json",
+      },
+      params: { locationId, query: name, limit: 5 },
+    });
+    return response.data?.contacts || [];
   }
+
   return findContact(name);
 }
 

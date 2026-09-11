@@ -25,7 +25,7 @@ function shouldHandleByLunaDirectly(message, context) {
     "kese ho",
     "kaise ho",
   ];
-  return Boolean(context?.isFirstMessage) || greetings.some((greet) => text.includes(greet));
+  return greetings.some((greet) => text === greet || text.startsWith(greet + " ") || text.endsWith(" " + greet));
 }
 
 export async function POST(req) {
