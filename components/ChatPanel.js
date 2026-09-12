@@ -1785,6 +1785,22 @@ export default function ChatPanel({ selectedAgent }) {
                               <span className="dash-card-city">{lead.city || "—"}</span>
                               <span className="dash-card-source">{lead.source}</span>
                             </div>
+                            <button
+                              className="dash-card-delete"
+                              title="Delete lead"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showConfirm(`Delete "${lead.name}"? This cannot be undone.`).then(async (ok) => {
+                                  if (!ok) return;
+                                  await callAction({ action: "delete-lead", leadId: lead.id });
+                                  setDashBoard(prev => {
+                                    const next = { ...prev, stages: { ...prev.stages } };
+                                    next.stages[stage.key] = (next.stages[stage.key] || []).filter(l => l.id !== lead.id);
+                                    return next;
+                                  });
+                                });
+                              }}
+                            >✕</button>
                           </div>
                         ))}
                         {leads.length === 0 && <div className="dash-col-empty">Empty</div>}
@@ -2313,8 +2329,20 @@ export default function ChatPanel({ selectedAgent }) {
                       onClick={(e) => { e.preventDefault(); setMaxHistoryLeadId(lead.id); setMaxTab("history"); maxLoadHistory(); }}
                       title="View outreach history"
                     >
-                      📋
+                      History
                     </button>
+                    <button
+                      className="iris-lead-delete"
+                      title="Delete lead"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        showConfirm(`Delete "${lead.name}"? This cannot be undone.`).then(async (ok) => {
+                          if (!ok) return;
+                          await callAction({ action: "delete-lead", leadId: lead.id });
+                          setMaxLeads(prev => prev.filter(l => l.id !== lead.id));
+                        });
+                      }}
+                    >✕</button>
                   </label>
                 ))}
               </div>
@@ -2931,6 +2959,7 @@ export default function ChatPanel({ selectedAgent }) {
                   <label>Source</label>
                   <select value={irisForm.source} onChange={e => setIrisForm(p => ({...p, source: e.target.value}))}>
                     <option value="survey">Survey Form</option>
+                    <option value="website_contact">Website Contact Form</option>
                     <option value="calendar_booking">Calendar Booking</option>
                     <option value="manual">Manual Entry</option>
                   </select>

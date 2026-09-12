@@ -911,6 +911,15 @@ body {
 .dash-card-name { font-size: 11px; font-weight: 600; color: #e8f0ff; margin-bottom: 2px; }
 .dash-card-clinic { font-size: 10px; color: #94b4ff; margin-bottom: 3px; }
 .dash-card-meta { display: flex; justify-content: space-between; gap: 4px; }
+.dash-card-delete {
+  display: none; position: absolute; top: 4px; right: 4px;
+  background: none; border: none; cursor: pointer;
+  color: #4a3a4a; font-size: 10px; padding: 1px 4px; border-radius: 3px;
+  transition: color 0.15s, background 0.15s; line-height: 1;
+}
+.dash-card:hover .dash-card-delete { display: block; }
+.dash-card-delete:hover { color: #f87171; background: rgba(248,113,113,0.15); }
+.dash-card { position: relative; }
 .dash-card-city { font-size: 9px; color: #4a6090; }
 .dash-card-source {
   font-size: 9px;
