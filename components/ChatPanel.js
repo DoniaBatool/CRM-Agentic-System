@@ -2991,8 +2991,19 @@ export default function ChatPanel({ selectedAgent }) {
                       {irisRecentLeads.slice(0, 8).map(lead => (
                         <div key={lead.id} className="iris-lead-row">
                           <span className="iris-lead-name">{lead.name}</span>
-                          <span className="iris-lead-clinic">{lead.clinic_name || lead.city || "—"}</span>
+                          <span className="iris-lead-clinic">{lead.organization_name || lead.city || "—"}</span>
                           <span className={`iris-lead-stage stage-${lead.stage?.replace(/_/g, "-")}`}>{lead.stage}</span>
+                          <button
+                            className="iris-lead-delete"
+                            title="Delete lead"
+                            onClick={() => {
+                              showConfirm(`Delete "${lead.name}"? This cannot be undone.`).then(async (ok) => {
+                                if (!ok) return;
+                                await callAction({ action: "delete-lead", leadId: lead.id });
+                                setIrisRecentLeads(prev => prev.filter(l => l.id !== lead.id));
+                              });
+                            }}
+                          >✕</button>
                         </div>
                       ))}
                     </div>
