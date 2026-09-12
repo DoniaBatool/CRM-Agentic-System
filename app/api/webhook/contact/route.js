@@ -35,7 +35,7 @@ export async function POST(request) {
   ];
 
   const body = await request.json().catch(() => ({}));
-  const { name, email, subject, message } = body;
+  const { name, email, organization, phone, city, subject, message } = body;
 
   if (!name?.trim() || !email?.trim()) {
     return corsResp({ error: "name and email are required" }, 400, origin);
@@ -43,11 +43,13 @@ export async function POST(request) {
 
   // 1. Create lead via Iris
   const intake = await processIntake({
-    name:       name.trim(),
-    email:      email.trim().toLowerCase(),
-    source:     "website_contact",
-    message:    [subject, message].filter(Boolean).join(" | "),
-    clinic_name: name.trim(), // use name as clinic_name initially
+    name:              name.trim(),
+    email:             email.trim().toLowerCase(),
+    phone:             phone || null,
+    organization_name: organization?.trim() || "",
+    city:              city?.trim() || "",
+    source:            "website_contact",
+    message:           [subject, message].filter(Boolean).join(" | "),
   });
 
   if (!intake.success) {
@@ -78,7 +80,7 @@ export async function POST(request) {
         name:        intake.lead.name,
         email:       intake.lead.email,
         phone:       intake.lead.phone || "",
-        clinicName:  intake.lead.clinic_name || intake.lead.name,
+        clinicName:  intake.lead.organization_name || intake.lead.name,
         city:        intake.lead.city || "",
         intakeToken: intakeToken,
       },
