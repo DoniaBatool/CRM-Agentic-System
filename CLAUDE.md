@@ -1352,3 +1352,60 @@ a lead, and the user now says "move it", "move them", "yes", "move to X stage", 
 ```
 
 This is an instructions-level fix, not a code fix. Apply the same pattern to any SDK agent that does multi-turn lookups (Cal, Max, etc.).
+
+### 66. Supabase column rename — update EVERY file that queries that column
+
+When renaming a Supabase column (e.g. `clinic_name` → `organization_name`), grep ALL files for the old name:
+```bash
+grep -rn "clinic_name" lib/ app/ components/
+```
+Files that had `clinic_name` DB references: `lib/dash-agent.js`, `lib/max-agent.js`, `lib/iris-agent.js`, `lib/agents/iris.js`, `lib/agents/rex.js`, `lib/agent-handlers.js`, `app/api/intake/[token]/route.js`, `app/intake/[token]/page.js`, `components/ChatPanel.js`.
+Any missed file causes a 500 error: `column agency_leads.clinic_name does not exist`.
+**Rule:** After any Supabase column rename, do `replace_all: true` on every affected file before committing.
+
+### 67. Vercel serverless kills fire-and-forget fetch after response is sent
+
+`fetch(...).then(...).catch(...)` (fire-and-forget) inside a Next.js API route does NOT complete on Vercel — the serverless function is terminated the moment `return NextResponse.json(...)` runs. The fetch silently never happens.
+
+**Fix:** Always `await` cross-service fetch calls inside the handler, before returning:
+```ts
+// ❌ Wrong — Vercel kills this before it runs
+fetch(url, { ... }).then(...).catch(...)
+return NextResponse.json({ success: true })
+
+// ✅ Correct — awaited before response
+try {
+  const r = await fetch(url, { ... })
+  console.log('response', r.status, await r.text())
+} catch (err) { console.error(err) }
+return NextResponse.json({ success: true })
+```
+
+### 68. Debug env vars in deployed functions with console.log
+
+When a cross-service webhook silently fails on Vercel (no error, no 404, just nothing happens), the most common cause is a missing/wrong env var. Add a `console.log` before the call:
+```ts
+console.log('[DentaFlow] DENTAFLOW_WEBHOOK_URL =', process.env.DENTAFLOW_WEBHOOK_URL ?? 'NOT SET')
+```
+Then check Vercel → Project → Logs. If it says `NOT SET` or shows a placeholder like `https://your-dentaflow.vercel.app`, the env var was never properly set or was set to the template value.
+
+### 69. Supabase RLS blocks anon key inserts — disable for internal tables
+
+`outreach_schedule` had Row Level Security enabled, which blocked inserts from the anon key (used by the serverless functions). Error: `new row violates row-level security policy for table "outreach_schedule"`.
+**Fix:**
+```sql
+ALTER TABLE outreach_schedule DISABLE ROW LEVEL SECURITY;
+```
+Apply to any table that is written to by server-side code using the anon key and doesn't need per-user access control.
+
+### 70. Hide agents from UI without deleting code — use hidden: true flag
+
+To temporarily hide an agent from the sidebar (Sara, Ayla, Atlas) without removing their code:
+1. Add `hidden: true` to the agent definition in `lib/agents.js`
+2. Filter in `app/page.js`: `agents={AGENTS.filter(a => !a.hidden)}`
+Code stays intact for future use. Remove `hidden: true` to restore.
+
+### 71. Duplicate lead detection returns "exists" — expected behavior
+
+When the same email/phone is submitted again via the contact form, `processIntake()` returns `{ ok: true, status: "exists" }` — this is correct. The pipeline doesn't create duplicates.
+**Testing:** Always use a fresh email when testing the form end-to-end. Real clients will always have new emails.

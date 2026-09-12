@@ -11,7 +11,7 @@ export default function HomePage() {
   return (
     <main className="app-shell">
       <AgentSidebar
-        agents={AGENTS}
+        agents={AGENTS.filter(a => !a.hidden)}
         selectedAgent={selectedAgent}
         onSelect={setSelectedAgent}
       />
