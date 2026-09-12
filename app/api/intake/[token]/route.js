@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
 
   const { data: lead, error } = await sb
     .from("agency_leads")
-    .select("id, name, clinic_name, email, phone, city, stage, intake_token, intake_submitted_at")
+    .select("id, name, organization_name, email, phone, city, stage, intake_token, intake_submitted_at")
     .eq("intake_token", token)
     .single();
 
@@ -35,7 +35,7 @@ export async function POST(request, { params }) {
   // Load lead
   const { data: lead, error: fetchErr } = await sb
     .from("agency_leads")
-    .select("id, name, clinic_name, email, phone, city, stage, intake_token, intake_submitted_at, booking_link")
+    .select("id, name, organization_name, email, phone, city, stage, intake_token, intake_submitted_at, booking_link")
     .eq("intake_token", token)
     .single();
 
@@ -49,7 +49,7 @@ export async function POST(request, { params }) {
   const body = await request.json().catch(() => ({}));
   const intakeData = {
     name:         (body.name || "").trim(),
-    clinic_name:  (body.clinic_name || "").trim(),
+    organization_name:  (body.organization_name || "").trim(),
     treatments:   Array.isArray(body.treatments) ? body.treatments : [],
     contact_time: body.contact_time || "",
     questions:    body.questions || "",
@@ -60,7 +60,7 @@ export async function POST(request, { params }) {
     .from("agency_leads")
     .update({
       name:                intakeData.name || lead.name,
-      clinic_name:         intakeData.clinic_name || lead.clinic_name,
+      organization_name:         intakeData.organization_name || lead.organization_name,
       treatments_offered:  intakeData.treatments,
       intake_data:         intakeData,
       intake_submitted_at: new Date().toISOString(),
@@ -95,7 +95,7 @@ export async function POST(request, { params }) {
         name:        intakeData.name || lead.name,
         email:       lead.email,
         phone:       lead.phone,
-        clinicName:  intakeData.clinic_name || lead.clinic_name,
+        clinicName:  intakeData.organization_name || lead.organization_name,
         city:        lead.city,
         bookingLink: lead.booking_link || `${baseUrl}/book`,
         intakeToken: token,

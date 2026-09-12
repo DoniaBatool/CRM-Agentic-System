@@ -126,7 +126,7 @@ export default function ChatPanel({ selectedAgent }) {
 
   // Iris state
   const [irisForm, setIrisForm] = useState({
-    name: "", email: "", phone: "", clinic_name: "", city: "",
+    name: "", email: "", phone: "", organization_name: "", city: "",
     source: "survey", website_url: "", message: "",
   });
   const [irisSubmitting, setIrisSubmitting] = useState(false);
@@ -962,7 +962,7 @@ export default function ChatPanel({ selectedAgent }) {
       const d = res.data;
       if (d?.success) {
         setIrisSubmitResult({ success: true, message: `✅ Lead ${d.isNew ? "added" : "already exists"} — Stage: ${d.stage}` });
-        setIrisForm({ name: "", email: "", phone: "", clinic_name: "", city: "", source: "survey", website_url: "", message: "" });
+        setIrisForm({ name: "", email: "", phone: "", organization_name: "", city: "", source: "survey", website_url: "", message: "" });
         irisLoadPipeline();
       } else {
         setIrisSubmitResult({ success: false, message: d?.errors?.join(", ") || "Failed to save lead." });
@@ -1152,7 +1152,7 @@ export default function ChatPanel({ selectedAgent }) {
             name:        lead.name,
             email:       lead.email || "",
             phone:       lead.phone || "",
-            clinicName:  lead.clinic_name || lead.name,
+            clinicName:  lead.organization_name || lead.name,
             city:        lead.city || "",
             intakeToken: lead.intake_token || "",
           },
@@ -1780,7 +1780,7 @@ export default function ChatPanel({ selectedAgent }) {
                             onClick={() => dashOpenLead(lead)}
                           >
                             <div className="dash-card-name">{lead.name}</div>
-                            {lead.clinic_name && <div className="dash-card-clinic">{lead.clinic_name}</div>}
+                            {lead.organization_name && <div className="dash-card-clinic">{lead.organization_name}</div>}
                             <div className="dash-card-meta">
                               <span className="dash-card-city">{lead.city || "—"}</span>
                               <span className="dash-card-source">{lead.source}</span>
@@ -1804,7 +1804,7 @@ export default function ChatPanel({ selectedAgent }) {
                   <button className="dash-modal-close" onClick={() => setDashSelectedLead(null)}>✕</button>
 
                   <div className="dash-modal-name">{dashSelectedLead.name}</div>
-                  {dashSelectedLead.clinic_name && <div className="dash-modal-clinic">{dashSelectedLead.clinic_name}</div>}
+                  {dashSelectedLead.organization_name && <div className="dash-modal-clinic">{dashSelectedLead.organization_name}</div>}
 
                   <div className="dash-modal-info-grid">
                     {dashSelectedLead.email && <span>📧 {dashSelectedLead.email}</span>}
@@ -2304,7 +2304,7 @@ export default function ChatPanel({ selectedAgent }) {
                       className="max-lead-checkbox"
                     />
                     <div className="max-lead-info">
-                      <span className="max-lead-name">{lead.clinic_name || lead.name}</span>
+                      <span className="max-lead-name">{lead.organization_name || lead.name}</span>
                       <span className="max-lead-meta">{lead.email || "no email"} · {lead.city || "—"}</span>
                     </div>
                     <span className={`max-stage-pill stage-${lead.stage}`}>{lead.stage}</span>
@@ -2346,7 +2346,7 @@ export default function ChatPanel({ selectedAgent }) {
                 >
                   <option value="">— Select a lead —</option>
                   {maxLeads.map((l) => (
-                    <option key={l.id} value={l.id}>{l.clinic_name || l.name}</option>
+                    <option key={l.id} value={l.id}>{l.organization_name || l.name}</option>
                   ))}
                 </select>
                 <button className="max-btn secondary" onClick={maxLoadHistory} disabled={loading || !maxHistoryLeadId}>Load</button>
@@ -2909,7 +2909,7 @@ export default function ChatPanel({ selectedAgent }) {
                 </div>
                 <div className="iris-field">
                   <label>Clinic Name</label>
-                  <input placeholder="Ali Dental Care" value={irisForm.clinic_name} onChange={e => setIrisForm(p => ({...p, clinic_name: e.target.value}))} />
+                  <input placeholder="Ali Dental Care" value={irisForm.organization_name} onChange={e => setIrisForm(p => ({...p, organization_name: e.target.value}))} />
                 </div>
               </div>
               <div className="iris-form-row">

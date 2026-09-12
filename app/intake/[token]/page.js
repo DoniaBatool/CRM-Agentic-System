@@ -33,7 +33,7 @@ export default function IntakePage() {
 
   const [form, setForm] = useState({
     name: "",
-    clinic_name: "",
+    organization_name: "",
     treatments: [],
     contact_time: "",
     questions: "",
@@ -58,7 +58,7 @@ export default function IntakePage() {
         setForm((prev) => ({
           ...prev,
           name:        data.lead.name || "",
-          clinic_name: data.lead.clinic_name || "",
+          organization_name: data.lead.organization_name || "",
         }));
         setStatus("form");
       })
@@ -76,7 +76,7 @@ export default function IntakePage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name.trim() || !form.clinic_name.trim()) {
+    if (!form.name.trim() || !form.organization_name.trim()) {
       setErrorMsg("Please fill in your name and clinic name.");
       return;
     }
@@ -173,8 +173,8 @@ export default function IntakePage() {
           <input
             style={styles.input}
             type="text"
-            value={form.clinic_name}
-            onChange={(e) => setForm({ ...form, clinic_name: e.target.value })}
+            value={form.organization_name}
+            onChange={(e) => setForm({ ...form, organization_name: e.target.value })}
             placeholder="e.g. Bright Smiles Dental"
             required
           />
