@@ -1409,3 +1409,20 @@ Code stays intact for future use. Remove `hidden: true` to restore.
 
 When the same email/phone is submitted again via the contact form, `processIntake()` returns `{ ok: true, status: "exists" }` — this is correct. The pipeline doesn't create duplicates.
 **Testing:** Always use a fresh email when testing the form end-to-end. Real clients will always have new emails.
+
+### 72. pre_meeting_reminder needs both lead-facing AND owner-facing steps
+
+`pre_meeting_reminder` sequence must send 6 rows to `outreach_schedule` (3 to the lead + 3 to Donia). Add `toOwner: true` steps at the same `offsetMs` values (-3d, -24h, -1h). The `scheduleSequence()` function already supports `toOwner` — it sends to `process.env.OWNER_EMAIL` instead of `lead.email`. Owner steps should include lead name, org, email, phone, city, and meeting link so Donia has everything she needs at a glance.
+
+### 73. scheduleSequence must always be awaited — fire-and-forget fails on Vercel
+
+`scheduleSequence(...).catch(...)` (fire-and-forget) does NOT complete after the serverless function returns. This applies everywhere: `app/api/webhook/contact/route.js`, `lib/agent-handlers.js` submit-lead handler, and add-rex-leads handler.
+**Fix:** Always `await scheduleSequence(...)` inside a `try/catch`.
+
+### 74. pre_meeting_reminder auto-trigger — pass meetingDatetime from UI
+
+When Dash's `move-stage` handler receives `toStage: "meeting_scheduled"`, it checks for `context.meetingDatetime`. If present, it auto-calls `scheduleSequence("pre_meeting_reminder", ...)` — fetching lead email/name/phone from Supabase if not already in context.
+
+In the UI (`ChatPanel.js`), `dashMoveLeadStage()` intercepts `toStage === "meeting_scheduled"` and shows a `meetingModal` (datetime-local input + optional meeting link URL). On confirm it calls itself recursively with the datetime, which then calls the action with `meetingDatetime` in context.
+
+**Pattern:** Any stage move that needs extra data before completing → add a React state modal, intercept in the move function, re-call with the captured data.
