@@ -73,20 +73,23 @@ export async function POST(request) {
         .eq("id", intake.lead.id);
     }
 
-    scheduleSequence({
-      sequenceKey: "new_lead_sequence",
-      lead: {
-        id:          intake.lead.id,
-        name:        intake.lead.name,
-        email:       intake.lead.email,
-        phone:       intake.lead.phone || "",
-        clinicName:  intake.lead.organization_name || intake.lead.name,
-        city:        intake.lead.city || "",
-        intakeToken: intakeToken,
-      },
-    }).catch((err) =>
-      console.error("[webhook/contact] Max schedule failed:", err.message)
-    );
+    // Must await — Vercel kills the function after the response is sent (learning #67)
+    try {
+      await scheduleSequence({
+        sequenceKey: "new_lead_sequence",
+        lead: {
+          id:          intake.lead.id,
+          name:        intake.lead.name,
+          email:       intake.lead.email,
+          phone:       intake.lead.phone || "",
+          clinicName:  intake.lead.organization_name || intake.lead.name,
+          city:        intake.lead.city || "",
+          intakeToken: intakeToken,
+        },
+      });
+    } catch (err) {
+      console.error("[webhook/contact] Max schedule failed:", err.message);
+    }
   }
 
   return corsResp({ ok: true, status: intake.isNew ? "created" : "exists" }, 200, origin);

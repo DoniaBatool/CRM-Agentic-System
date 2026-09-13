@@ -39,6 +39,11 @@ export default function ChatPanel({ selectedAgent }) {
   // Custom confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState(null); // { message, onConfirm }
 
+  // Meeting datetime modal state (for moving lead to meeting_scheduled)
+  const [meetingModal, setMeetingModal] = useState(null); // { leadId, toStage }
+  const [meetingDatetimeInput, setMeetingDatetimeInput] = useState("");
+  const [meetingLinkInput, setMeetingLinkInput] = useState("");
+
   /** Themed replacement for window.confirm — returns a Promise<boolean> */
   function showConfirm(message) {
     return new Promise((resolve) => {
@@ -914,12 +919,26 @@ export default function ChatPanel({ selectedAgent }) {
     finally { setDashDetailLoading(false); }
   }
 
-  async function dashMoveLeadStage(leadId, toStage) {
+  async function dashMoveLeadStage(leadId, toStage, meetingDatetime = null, meetingLink = null) {
     if (!leadId || !toStage) { console.error("dashMoveLeadStage: missing leadId or toStage", { leadId, toStage }); return; }
+
+    // When moving to meeting_scheduled, ask for meeting datetime first
+    if (toStage === "meeting_scheduled" && !meetingDatetime) {
+      setMeetingDatetimeInput("");
+      setMeetingLinkInput("");
+      setMeetingModal({ leadId, toStage });
+      return;
+    }
+
     setDashMoveStage(toStage);
     setDashMoveError(null);
     try {
-      const res = await callAction({ action: "move-stage", leadId, toStage });
+      const res = await callAction({
+        action: "move-stage",
+        leadId,
+        toStage,
+        ...(meetingDatetime ? { meetingDatetime, meetingLink: meetingLink || "" } : {}),
+      });
       console.log("move-stage response:", res);
       if (res?.data?.success === false) {
         setDashMoveError("Move failed: " + (res?.response || "unknown error"));
@@ -3046,6 +3065,47 @@ export default function ChatPanel({ selectedAgent }) {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Meeting datetime modal — shown when moving lead to meeting_scheduled */}
+      {meetingModal && (
+        <div className="confirm-overlay" onClick={() => setMeetingModal(null)}>
+          <div className="confirm-box" style={{ minWidth: 320 }} onClick={(e) => e.stopPropagation()}>
+            <p className="confirm-msg" style={{ marginBottom: 16 }}>📅 When is the meeting?</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: "#94a3b8" }}>Date &amp; Time *</label>
+              <input
+                type="datetime-local"
+                value={meetingDatetimeInput}
+                onChange={(e) => setMeetingDatetimeInput(e.target.value)}
+                style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6, padding: "8px 10px", color: "#f1f5f9", fontSize: 14 }}
+              />
+              <label style={{ fontSize: 12, color: "#94a3b8" }}>Meeting link (optional)</label>
+              <input
+                type="url"
+                placeholder="https://meet.google.com/..."
+                value={meetingLinkInput}
+                onChange={(e) => setMeetingLinkInput(e.target.value)}
+                style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6, padding: "8px 10px", color: "#f1f5f9", fontSize: 14 }}
+              />
+            </div>
+            <div className="confirm-actions">
+              <button className="confirm-cancel" onClick={() => setMeetingModal(null)}>Cancel</button>
+              <button
+                className="confirm-ok"
+                style={{ background: "#2563eb" }}
+                disabled={!meetingDatetimeInput}
+                onClick={() => {
+                  const { leadId, toStage } = meetingModal;
+                  setMeetingModal(null);
+                  dashMoveLeadStage(leadId, toStage, meetingDatetimeInput, meetingLinkInput);
+                }}
+              >
+                Schedule
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
