@@ -1,12 +1,12 @@
-# DentaFlow — Agentic Platform
+# FlowForge — Multi-Agent Automation Platform
 
 ## What This Project Is
 
-A multi-agent platform that automates dental marketing agency operations and dental business management.
+A multi-agent platform that automates business operations for any industry — lead generation, outreach, pipeline management, content creation, calendar booking, and more.
 
 **Two systems in one codebase:**
 1. **Agency System** — Donia's internal tool: pipeline, social media, lead intake, follow-ups
-2. **Dental Client System** — Per dental business: website, WhatsApp agent, patient bookings, reminders (future phase)
+2. **Client System** — Per business: website, WhatsApp agent, bookings, reminders (future phase)
 
 ---
 
