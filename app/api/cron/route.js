@@ -59,12 +59,14 @@ async function processRow(sb, row) {
   try {
     if (row.channel === "email") {
       if (!row.to_email) throw new Error("No to_email");
-      await sendEmail({
+      const emailResult = await sendEmail({
         to:      row.to_email,
         subject: row.subject || "(no subject)",
         html:    row.html || undefined,
         text:    row.text_body || undefined,
       });
+      // dev mode — SMTP not configured, don't mark as sent
+      if (emailResult?.dev) throw new Error("SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS in Vercel env vars");
     } else if (row.channel === "whatsapp") {
       if (!row.to_phone) throw new Error("No to_phone");
       await sendWhatsApp({ to: row.to_phone, message: row.text_body || "" });
