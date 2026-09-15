@@ -1426,3 +1426,103 @@ When Dash's `move-stage` handler receives `toStage: "meeting_scheduled"`, it che
 In the UI (`ChatPanel.js`), `dashMoveLeadStage()` intercepts `toStage === "meeting_scheduled"` and shows a `meetingModal` (datetime-local input + optional meeting link URL). On confirm it calls itself recursively with the datetime, which then calls the action with `meetingDatetime` in context.
 
 **Pattern:** Any stage move that needs extra data before completing → add a React state modal, intercept in the move function, re-call with the captured data.
+
+### 75. Brevo SMTP — SMTP_USER ≠ SMTP_FROM (two different things)
+
+Brevo gives two separate credentials that serve DIFFERENT purposes:
+- `SMTP_USER` = Brevo login/authentication credential (e.g. `b8f0f6001@smtp-brevo.com`) — used ONLY for SMTP authentication, NEVER as the "from" address
+- `SMTP_FROM` = Verified sender email in Brevo (e.g. `thenovaflow999@gmail.com`) — shown to recipients as "From"
+
+**If you use `SMTP_USER` as the from address**, Gmail and other providers will reject or spam-folder the email because `b8f0f6001@smtp-brevo.com` is not a real email address — it's just an auth token.
+
+**Fix:** Add `SMTP_FROM` as a separate env var in Vercel. In `max-agent.js`:
+```js
+const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@novaflow.ai";
+const from = fromName ? `${fromName} <${fromEmail}>` : `NovaFlow AI <${fromEmail}>`;
+```
+
+**Vercel env vars needed for email to work:**
+- `SMTP_HOST` = smtp-relay.brevo.com
+- `SMTP_PORT` = 587
+- `SMTP_USER` = b8f0f6001@smtp-brevo.com (Brevo login)
+- `SMTP_PASS` = your Brevo SMTP key
+- `SMTP_FROM` = thenovaflow999@gmail.com (verified sender)
+
+### 76. sendEmail() returns `{ dev: true }` silently when SMTP not configured — cron treats it as success
+
+`sendEmail()` in `max-agent.js` checks if SMTP env vars are set. If missing, it returns `{ sent: false, dev: true }` WITHOUT throwing. The cron saw this as a success and marked rows as `sent` even though no email was delivered.
+
+**Fix in `app/api/cron/route.js`:** Check for `dev: true` and throw explicitly:
+```js
+const emailResult = await sendEmail({ to, subject, html, text });
+if (emailResult?.dev) throw new Error("SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_FROM in Vercel env vars");
+```
+This causes the row to be marked `failed` (not `sent`), making the problem visible in Supabase.
+
+### 77. delete-lead action must be in the pre-SDK block of EVERY agent that has delete UI
+
+The `callAction()` function in `ChatPanel.js` sends requests with the currently selected `agentId`. If a user deletes a lead from the Dash panel, the request has `agentId: "dash"`. If `delete-lead` is only handled in the Iris pre-SDK block, Dash/Max calls skip it and nothing happens — no error, just silence.
+
+**Rule:** Any action that appears in multiple agent panels MUST be added to the pre-SDK block of each relevant agent.
+
+**Current state:** `delete-lead` exists in pre-SDK blocks for `iris`, `dash`, and `max`.
+
+```js
+// Pattern — add to EACH agent's pre-SDK block:
+if (context.action === "delete-lead") {
+  const result = await deleteLead(context.leadId);
+  return { handledBy: "agentId", response: "Lead deleted.", data: { success: true, deleted: result.deleted } };
+}
+```
+
+### 78. Cron runs frequently ≠ emails sent frequently — they are independent
+
+The cron job runs every 30 minutes as a "checker". It only sends emails where `send_at <= NOW() AND status = 'pending'`. The email sequence schedules rows with specific future timestamps (+24h, +3d, +7d, +15d). Each email will only be sent ONCE — when its `send_at` time arrives.
+
+**Mental model:** Alarm clock ticks every minute but the alarm only rings at 7 AM.
+
+If the user sees cron running every 30 min and worries emails go every 30 min → clarify this.
+
+### 79. Supabase Gateway Timeout from Vercel cron — two fixes
+
+Vercel serverless functions have a default 10s timeout. Supabase (if in a different region or under load) can occasionally take longer to respond → function times out → cron returns 500.
+
+**Symptom:** `[cron] fetch error: { message: 'Gateway Timeout' }` in Vercel logs. `outreach_schedule` rows stay `pending` even after their `send_at` has passed.
+
+**Fix 1 — Increase cron function timeout in `vercel.json`:**
+```json
+{
+  "crons": [],
+  "functions": {
+    "app/api/cron/route.js": {
+      "maxDuration": 30
+    }
+  }
+}
+```
+
+**Fix 2 — Add partial index on `outreach_schedule` for faster queries:**
+```sql
+CREATE INDEX IF NOT EXISTS idx_outreach_schedule_pending
+ON outreach_schedule (status, send_at) WHERE status = 'pending';
+```
+This makes the pending-row lookup instant even with thousands of rows.
+
+### 80. Git lock files from Claude's sandbox — never run git commands from bash tool
+
+When Claude runs `git` commands from the sandbox bash tool, it can leave `HEAD.lock` or `index.lock` files in `.git/`. These block the user's own git operations with "another process is running" errors.
+
+**Rule:** Claude does NOT run `git add`, `git commit`, `git push` from the sandbox. The user runs all git commands manually in their own terminal.
+
+**If lock files appear:** User runs:
+```bash
+rm -f ~/Documents/flowforge/.git/HEAD.lock ~/Documents/flowforge/.git/index.lock
+```
+
+### 81. Vercel project ID for FlowForge — for MCP log queries
+
+FlowForge Vercel project ID: `prj_7ktV2s5yVtAn6sF8BUdo9toQQJ5Q`
+Team ID: `team_L4sjyTycHfQSHK6dj36Z0qep`
+Supabase active project: `aelekcrkshnbwfrncraz` (Digital-CRM-Employee, ap-northeast-2)
+
+Use these with Vercel MCP (`get_runtime_errors`, `get_runtime_logs`) and Supabase MCP (`execute_sql`) to debug production issues without the user needing to open dashboards.
